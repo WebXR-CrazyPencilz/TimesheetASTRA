@@ -4585,7 +4585,7 @@ function calculateTimeline() {
   const earliestYear = Math.min(parseInt(earliest.slice(0, 4), 10), GANTT_TIMELINE_FLOOR_YEAR);
   const paddedStart = `${earliestYear}-01-01`;
 
-  GANTT_TIMELINE = { months: buildMonthHeaders(paddedStart, latest), startKey: paddedStart.slice(0, 7), endKey: latest.slice(0, 7) };
+  GANTT_TIMELINE = { months: buildMonthHeaders(paddedStart, latest).reverse(), startKey: paddedStart.slice(0, 7), endKey: latest.slice(0, 7) };
 }
 
 function buildMonthHeaders(startDateStr, endDateStr) {
@@ -4663,7 +4663,7 @@ function renderGanttShell(content) {
 
   renderTimeline();
 
-  requestAnimationFrame(() => fitAll());
+  requestAnimationFrame(() => showRecentGanttMonths());
 }
 
 function renderFilters() {
@@ -4845,7 +4845,7 @@ function drawProjectBars(projects) {
     const endIdx   = monthIndexOf(endKey);
     if (startIdx === -1 || endIdx === -1) return;
 
-    for (let i = startIdx; i <= endIdx; i++) {
+    for (let i = Math.min(startIdx, endIdx); i <= Math.max(startIdx, endIdx); i++) {
       const monthKey = GANTT_TIMELINE.months[i]?.key;
       if (!monthKey || !p.activeMonths || !p.activeMonths.has(monthKey)) continue; 
 
@@ -4993,7 +4993,16 @@ function zoomIn()  { setGanttMonthWidth(GANTT_MONTH_WIDTH + 8); }
 function zoomOut() { setGanttMonthWidth(GANTT_MONTH_WIDTH - 8); }
 
 function setGanttMonthWidth(px) {
-  GANTT_MONTH_WIDTH = Math.max(GANTT_MONTH_WIDTH_MIN, Math.min(GANTT_MONTH_WIDTH_MAX, px));
+  const viewportWidth = $('ganttScroll')?.clientWidth || 0;
+  const maxWidth = Math.max(GANTT_MONTH_WIDTH_MAX, (viewportWidth - GANTT_LABEL_WIDTH) / 6);
+  GANTT_MONTH_WIDTH = Math.max(GANTT_MONTH_WIDTH_MIN, Math.min(maxWidth, px));
+  renderTimeline();
+}
+
+function showRecentGanttMonths() {
+  const scroller = $('ganttScroll');
+  if (!scroller || !GANTT_TIMELINE) return;
+  GANTT_MONTH_WIDTH = Math.max(1, (scroller.clientWidth - GANTT_LABEL_WIDTH) / 12);
   renderTimeline();
 }
 
@@ -5005,10 +5014,10 @@ function fitAll() {
   const realEarliest  = findEarliestProject();
   const realStartIdx  = realEarliest ? monthIndexOf(realEarliest.slice(0, 7)) : -1;
   const todayIdx      = monthIndexOf(todayStr().slice(0, 7));
-  const hasRealRange  = realStartIdx !== -1 && todayIdx !== -1 && todayIdx >= realStartIdx;
+  const hasRealRange  = realStartIdx !== -1 && todayIdx !== -1;
 
   const monthCount = hasRealRange
-    ? Math.max(todayIdx - realStartIdx + 1, 1)
+    ? Math.abs(todayIdx - realStartIdx) + 1
     : Math.max(GANTT_TIMELINE.months.length, 1); 
 
   const idealWidth = Math.floor(availableWidth / monthCount);
@@ -5018,7 +5027,7 @@ function fitAll() {
   if (hasRealRange) {
     requestAnimationFrame(() => {
       const scroller = $('ganttScroll');
-      if (scroller) scroller.scrollLeft = Math.max(realStartIdx * GANTT_MONTH_WIDTH - 20, 0);
+      if (scroller) scroller.scrollLeft = Math.max(Math.min(realStartIdx, todayIdx) * GANTT_MONTH_WIDTH - 20, 0);
     });
   }
 }
