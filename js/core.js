@@ -1,6 +1,6 @@
 // CONFIG
 const CONFIG = {
-  SHEETS_URL: 'https://script.google.com/macros/s/AKfycbwsNj9BTMVV1vLpso_ftkIp2T3jZG8eiMQETfpOafrKaU8BO1-sorWDyrvTf7fzUXtzeg/exec',
+  SHEETS_URL: 'https://script.google.com/macros/s/AKfycbwJ4T2YTy0V3zLvv3wP6kXbbeeIs9s1HzIuPm-MmW-vyVk9DRs5xEyZVzhxvIxFzdrqAQ/exec',
 
   DEMO_MODE: false,
 
@@ -422,6 +422,20 @@ async function apiChangeOwnPassword(uid, currentPw, newPw) {
   });
 }
 
+async function apiGetUnitsData(uid) {
+  const data = await sheetGET(uid ? { action: 'getUnitsData', uid } : { action: 'getUnitsData' });
+  // Sheets turns "2026-10" into a date, so derive the month from the work date instead
+  (data.allocations || []).forEach(a => { a.month = String(a.date || '').slice(0, 7); });
+  return data;
+}
+
+async function apiUnitsWrite(action, data) {
+  return sheetGET({
+    action,
+    data: encodeURIComponent(JSON.stringify({ ...data, role: USER && USER.role, byName: USER && USER.name })),
+  });
+}
+
 // AUTH
 let USER           = null;
 let LIVE_EMPLOYEES = [];
@@ -646,6 +660,7 @@ async function loginAs(emp, silent = false) {
     refreshTable();
     refreshChart();
     switchEmpTab('projects');
+    checkUnitNotifications();
     if (!silent) toast('s', `Welcome back, ${emp.name.split(' ')[0]}! 👋`, emp.team);
   } catch(err) {
     if (session !== APP_SESSION) return;
@@ -827,12 +842,12 @@ let APP_SESSION = 0;
 const APP_SCRIPTS = new Map();
 let APP_INITIALIZED = false;
 async function ensureAppLoaded() {
-  const names = ['employee', 'projects', 'portals'];
+  const names = ['employee', 'projects', 'portals', 'units'];
   await Promise.all(names.map(name => {
     if (APP_SCRIPTS.has(name)) return APP_SCRIPTS.get(name);
     const promise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'js/' + name + '.js?v=2026100701'; script.async = false;
+      script.src = 'js/' + name + '.js?v=2026102912'; script.async = false;
       script.onload = resolve;
       script.onerror = () => { script.remove(); APP_SCRIPTS.delete(name); reject(new Error('Could not load the app. Please try signing in again.')); };
       document.head.appendChild(script);
@@ -861,6 +876,7 @@ function resetAppSession() {
   MGR_DATA = []; TL_DATA = []; HR_DATA = []; TL_EMPLOYEE_INDEX = {};
   GANTT_PROJECTS = []; GANTT_ALL_ENTRIES = [];
   CP_ROLE = null; CP_ATTEND_HR_DEFAULTED = false;
+  UNITS_DATA = null; UNITS_MONTH = todayStr().slice(0, 7);
 }
 function boot() {
   setTheme(getTheme());

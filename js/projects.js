@@ -1577,6 +1577,7 @@ async function openProjectDetail(content, projectId, opts = {}) {
         <div style="min-width:0;">
           ${formCard}
           <div id="cpTimelineSection" style="margin-top:1.25rem;"></div>
+          ${canEdit ? `<div id="cpUnitsSection" style="margin-top:1.25rem;"></div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;gap:1.25rem;min-width:0;">
           ${isManager ? `<div id="cpProfitSection"></div>` : ''}
@@ -1634,6 +1635,7 @@ async function openProjectDetail(content, projectId, opts = {}) {
   $('cpReportOverall')?.addEventListener('click', () => openProjectReport(project, 'overall'));
 
   if (!isNew) renderProjectTimelineSection(project);
+  if (!isNew && canEdit) renderProjectUnitsSection(project);
   if (!isNew && isManager) {
     await ensureSalaryDataLoaded();
     renderProjectProfitSection(project);

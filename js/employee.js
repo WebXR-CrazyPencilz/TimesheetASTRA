@@ -1092,7 +1092,7 @@ function switchEmpTab(tab) {
     if (el) el.style.display = key === tab ? '' : 'none';
   });
 
-  if (tab === 'projects') renderMyDashboardTab();
+  if (tab === 'projects') { renderMyDashboardTab(); renderMyUnitsCard(); }
   if (tab === 'attendance') renderMyAttendanceTab();
 }
 

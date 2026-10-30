@@ -676,6 +676,15 @@ tr:hover .del-btn{opacity:1}
       </div>
     </div>
     <div class="bar-right">
+      <div style="position:relative;">
+        <button class="ibtn" id="unitsBell" aria-label="Notifications" style="position:relative;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="unitsBellCount" style="display:none;position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+            border-radius:99px;background:var(--err);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;"></span>
+        </button>
+        <div id="unitsBellPanel" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:330px;max-width:90vw;z-index:500;
+          background:var(--surface);border:1px solid var(--border-md);border-radius:12px;box-shadow:var(--sh-sm);"></div>
+      </div>
       <button class="ibtn" id="athm" aria-label="Toggle theme">
         <svg id="asun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg id="amoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -771,6 +780,7 @@ tr:hover .del-btn{opacity:1}
           <p class="psub">Every project you've worked on, with budget status at a glance.</p>
         </div>
       </div>
+      <div id="myUnitsCard" style="margin-bottom:1.25rem;"></div>
       <div id="myProjCardsContainer">
         <div class="slot-loading"><div class="slot-spinner"></div><span>Loading…</span></div>
       </div>
@@ -788,6 +798,7 @@ tr:hover .del-btn{opacity:1}
         <div class="slot-loading"><div class="slot-spinner"></div><span>Loading…</span></div>
       </div>
     </div>
+
   </main>
 </div>
 
@@ -933,6 +944,6 @@ tr:hover .del-btn{opacity:1}
 <div class="tbox" id="tbox" aria-live="assertive"></div>
 
 <!-- ═══ JS MODULES ══════════════════════════════════════════════ -->
-<script src="js/core.js?v=2026100701" defer></script>
+<script src="js/core.js?v=2026102912" defer></script>
 </body>
 </html>
