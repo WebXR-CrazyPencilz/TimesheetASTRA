@@ -2945,8 +2945,14 @@ const FE_MIN_NOTES_LENGTH     = 25;
 
 const FE_SLOT_META = {
   morning:   { label: 'Morning',   icon: '🌅', defaultIn: '09:30', defaultOut: '13:00', minTime: '08:30', maxTime: '13:00', displayMin: '09:30' },
-  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30', minTime: '13:30', maxTime: '20:00', displayMin: '13:45' },
+  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30', minTime: '13:30', maxTime: '00:00', displayMin: '13:45' },
 };
+
+// Time Out of 00:00 means midnight (end of day), not the start of it
+function feOutMinutes(t) {
+  const m = toMinutes(t);
+  return m === 0 ? 24 * 60 : m;
+}
 
 const FE_TASKS = ['Modelling & Texturing','lighting & Rendering', 'Web Development','2D FloorPlan', 'Editing & Grading', 'Unreal App Development', 'Training R&D'];
 
@@ -3304,8 +3310,7 @@ function calcFeHours(id) {
   const hrsEl = $(`fehrs-${id}`);
   if (!tin || !tout || !hrsEl) return;
   const [ih, im] = tin.split(':').map(Number);
-  const [oh, om] = tout.split(':').map(Number);
-  const mins = (oh * 60 + om) - (ih * 60 + im);
+  const mins = feOutMinutes(tout) - (ih * 60 + im);
   if (mins <= 0) { hrsEl.textContent = '—'; return; }
   const hh = Math.floor(mins / 60);
   const mm = mins % 60;
@@ -3356,8 +3361,8 @@ async function saveForceEntryAll() {
       if (!tout.value)  { toast?.('e', `${label} #${entryNum}: enter time out`); return; }
 
       const meta = FE_SLOT_META[slotKey];
-      const minM = toMinutes(meta.minTime), maxM = toMinutes(meta.maxTime);
-      const inM  = toMinutes(tin.value),    outM = toMinutes(tout.value);
+      const minM = toMinutes(meta.minTime), maxM = feOutMinutes(meta.maxTime);
+      const inM  = toMinutes(tin.value),    outM = feOutMinutes(tout.value);
 
       if (inM < minM || inM > maxM) {
         toast?.('e', 'Time In out of range', `${label} allows ${meta.displayMin}–${meta.maxTime}`);

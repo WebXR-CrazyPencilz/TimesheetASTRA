@@ -847,7 +847,7 @@ async function ensureAppLoaded() {
     if (APP_SCRIPTS.has(name)) return APP_SCRIPTS.get(name);
     const promise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'js/' + name + '.js?v=2026110301'; script.async = false;
+      script.src = 'js/' + name + '.js?v=2026110302'; script.async = false;
       script.onload = resolve;
       script.onerror = () => { script.remove(); APP_SCRIPTS.delete(name); reject(new Error('Could not load the app. Please try signing in again.')); };
       document.head.appendChild(script);
