@@ -2362,9 +2362,25 @@ function getProjectContribution(project, fromDate, toDate) {
     byEmp[e.empId].byTask[task] = (byEmp[e.empId].byTask[task] || 0) + h;
   });
 
+  // Imported historical hours are monthly totals, so include a month when it overlaps the period
+  const HIST_TASK = 'Historical (imported)';
+  const histTaskHours = {};
+  const fromMonth = fromDate.slice(0, 7), toMonth = toDate.slice(0, 7);
+  CP_HISTORICAL_DATA
+    .filter(h => sameProjectId(h.projectId, project.projectId))
+    .forEach(h => {
+      const month = histMonthYearToKey_(h.month, h.year);
+      const hrs = Number(h.totalHours) || 0;
+      if (!month || !h.employeeId || hrs <= 0 || month < fromMonth || month > toMonth) return;
+      if (!byEmp[h.employeeId]) byEmp[h.employeeId] = { hours: 0, days: new Set(), notes: [], byTask: {}, histName: h.employeeName };
+      byEmp[h.employeeId].hours += hrs;
+      byEmp[h.employeeId].byTask[HIST_TASK] = (byEmp[h.employeeId].byTask[HIST_TASK] || 0) + hrs;
+      histTaskHours[HIST_TASK] = (histTaskHours[HIST_TASK] || 0) + hrs;
+    });
+
   const members = Object.entries(byEmp)
     .map(([empId, d]) => {
-      const emp = CP_EMPLOYEES.find(x => x.id === empId);
+      const emp = CP_EMPLOYEES.find(x => x.id === empId) || (d.histName ? { name: d.histName } : null);
       const tasks = Object.entries(d.byTask)
         .map(([task, hours]) => ({ task, hours }))
         .sort((a, b) => b.hours - a.hours);
@@ -2377,6 +2393,7 @@ function getProjectContribution(project, fromDate, toDate) {
     const task = (e.task || '').trim() || 'Unspecified';
     byTaskTotal[task] = (byTaskTotal[task] || 0) + parseH(e.hours);
   });
+  Object.entries(histTaskHours).forEach(([task, hours]) => { byTaskTotal[task] = (byTaskTotal[task] || 0) + hours; });
   const totalHoursAll = members.reduce((s, m) => s + m.hours, 0);
   const taskTotals = Object.entries(byTaskTotal)
     .map(([task, hours]) => ({ task, hours }))
@@ -2560,6 +2577,12 @@ function buildProjectReportHTML(project, mode, targetMonth) {
     const entries  = CP_TIMESHEET_DATA.filter(e => e.project === project.projectName && e.status !== 'Leave' && e.date);
     let earliest   = entries.reduce((min, e) => (!min || e.date < min) ? e.date : min, null);
     if (project.startDate && (!earliest || project.startDate < earliest)) earliest = project.startDate;
+    CP_HISTORICAL_DATA
+      .filter(h => sameProjectId(h.projectId, project.projectId))
+      .forEach(h => {
+        const month = histMonthYearToKey_(h.month, h.year);
+        if (month && (!earliest || month + '-01' < earliest)) earliest = month + '-01';
+      });
     fromDate = earliest || today;
     toDate   = today;
     periodLabel = `${fmtCPDateShort(fromDate)} – ${fmtCPDateShort(toDate)}`;
