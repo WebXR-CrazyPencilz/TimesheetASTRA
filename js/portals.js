@@ -2945,7 +2945,7 @@ const FE_MIN_NOTES_LENGTH     = 25;
 
 const FE_SLOT_META = {
   morning:   { label: 'Morning',   icon: '🌅', defaultIn: '09:30', defaultOut: '13:00', minTime: '08:30', maxTime: '13:00', displayMin: '09:30' },
-  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30', minTime: '13:30', maxTime: '00:00', displayMin: '13:45' },
+  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30', minTime: '13:45', maxTime: '00:00', displayMin: '13:45' },
 };
 
 // Time Out of 00:00 means midnight (end of day), not the start of it
