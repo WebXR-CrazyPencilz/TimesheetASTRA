@@ -2944,8 +2944,8 @@ const FE_MAX_ENTRIES_PER_SLOT = 4;
 const FE_MIN_NOTES_LENGTH     = 25;
 
 const FE_SLOT_META = {
-  morning:   { label: 'Morning',   icon: '🌅', defaultIn: '09:30', defaultOut: '13:00', minTime: '08:30', maxTime: '13:00', displayMin: '09:30' },
-  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30', minTime: '13:45', maxTime: '00:00', displayMin: '13:45' },
+  morning:   { label: 'Morning',   icon: '🌅', defaultIn: '09:30', defaultOut: '13:00' },
+  afternoon: { label: 'Afternoon', icon: '☀️',  defaultIn: '13:45', defaultOut: '19:30' },
 };
 
 // Time Out of 00:00 means midnight (end of day), not the start of it
@@ -3187,20 +3187,20 @@ function renderFeEntryRow(slotKey, entryNum, existing) {
       <div class="fg">
         <label class="flabel">Time In</label>
         <input type="time" class="fc time-inp" id="fetin-${id}" value="${timeIn}"
-          min="${meta.displayMin}" max="${meta.maxTime}" onchange="calcFeHours('${id}')" />
+          onchange="calcFeHours('${id}')" />
       </div>
       <div class="time-arrow">→</div>
       <div class="fg">
         <label class="flabel">Time Out</label>
         <input type="time" class="fc time-inp" id="fetout-${id}" value="${timeOut}"
-          min="${meta.displayMin}" max="${meta.maxTime}" onchange="calcFeHours('${id}')" />
+          onchange="calcFeHours('${id}')" />
       </div>
       <div class="fg hours-display">
         <label class="flabel">Hours</label>
         <div class="hours-badge" id="fehrs-${id}">${hours ? fmtFeHours(hours) : '—'}</div>
       </div>
     </div>
-    <div class="slot-time-hint">Allowed range: ${meta.displayMin} – ${meta.maxTime}</div>
+    <div class="slot-time-hint">Any time allowed for Time In and Time Out. Time Out must be after Time In; 00:00 means end of day.</div>
 
     <div class="frow">
       <div class="fg">
@@ -3360,18 +3360,8 @@ async function saveForceEntryAll() {
       if (!tin.value)   { toast?.('e', `${label} #${entryNum}: enter time in`);  return; }
       if (!tout.value)  { toast?.('e', `${label} #${entryNum}: enter time out`); return; }
 
-      const meta = FE_SLOT_META[slotKey];
-      const minM = toMinutes(meta.minTime), maxM = feOutMinutes(meta.maxTime);
-      const inM  = toMinutes(tin.value),    outM = feOutMinutes(tout.value);
+      const inM = toMinutes(tin.value), outM = feOutMinutes(tout.value);
 
-      if (inM < minM || inM > maxM) {
-        toast?.('e', 'Time In out of range', `${label} allows ${meta.displayMin}–${meta.maxTime}`);
-        tin.classList.add('bad'); return;
-      }
-      if (outM < minM || outM > maxM) {
-        toast?.('e', 'Time Out out of range', `${label} allows ${meta.displayMin}–${meta.maxTime}`);
-        tout.classList.add('bad'); return;
-      }
       if (outM <= inM) {
         toast?.('e', 'Time Out must be after Time In');
         tout.classList.add('bad'); return;
