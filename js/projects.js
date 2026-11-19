@@ -684,6 +684,13 @@ function getMonthlyPointsForEmployee(empId, month, empName) {
   return eff && eff.record ? (parseFloat(eff.record.points) || 0) : 0;
 }
 
+async function calculateProjectCost(project) {
+  await ensureSalaryDataLoaded();
+  const breakdown = getProjectCostBreakdown(project);
+  const revenue = parseFloat(project.projectConstant) || 0;
+  return { ...breakdown, revenue, profit: revenue - breakdown.totalCost };
+}
+
 function getProjectCostBreakdown(project) {
   const totals = getProjectEmployeeTotals(project); 
   const byEmpMonth = getProjectMonthlyHoursByEmployee(project);
